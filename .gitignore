@@ -1,0 +1,27 @@
+# Ignore node_modules directories
+reverse-proxy/node_modules
+build-server/node_modules
+api-server/node_modules
+
+# Ignore environment files
+reverse-proxy/.env
+api-server/.env
+build-server/utils/.env
+build-server/.env
+
+# Ignore build script
+build-server/build-script.sh
+
+# Ignore specific certificate files
+reverse-proxy/prisma/ca.pem
+build-server/utils/kafka.pem
+build-server/prisma/ca.pem
+api-server/prisma/ca.pem
+api-server/kafka.pem
+
+# Ignore Prisma migrations directory
+api-server/prisma/migrations
+
+# Ignore connection files
+build-server/utils/connection.js
+api-server/connections.js
