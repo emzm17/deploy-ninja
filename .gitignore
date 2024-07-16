@@ -13,15 +13,15 @@ build-server/.env
 build-server/build-script.sh
 
 # Ignore specific certificate files
-reverse-proxy/prisma/ca.pem
-build-server/utils/kafka.pem
-build-server/prisma/ca.pem
-api-server/prisma/ca.pem
-api-server/kafka.pem
+# reverse-proxy/prisma/ca.pem
+# build-server/utils/kafka.pem
+# build-server/prisma/ca.pem
+# api-server/prisma/ca.pem
+# api-server/kafka.pem
 
 # Ignore Prisma migrations directory
 api-server/prisma/migrations
 
-# Ignore connection files
-build-server/utils/connection.js
-api-server/connections.js
+Ignore connection files
+build-server/connection.js
+api-server/connection.js

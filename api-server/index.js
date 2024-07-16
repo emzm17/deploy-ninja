@@ -9,7 +9,7 @@ const userRouter = require('./routes/userRouter');
 const projectRouter = require('./routes/projectRouter');
 app.use("/users",userRouter);
 app.use('/projects',projectRouter);
-const {kafka,client,deploy} = require('./connections');
+const {kafka,client,deploy} = require('./connection');
 
 const consumer = kafka.consumer({
   groupId: 'api-server-logs-consumer'

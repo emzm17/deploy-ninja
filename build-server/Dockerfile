@@ -15,9 +15,9 @@ WORKDIR /home/usr/app
 # Copy necessary files to the working directory
 COPY main.sh main.sh
 COPY script.js script.js
-COPY ./utils/connection.js connection.js
+COPY connection.js connection.js
 COPY package*.json ./
-COPY ./utils/kafka.pem kafka.pem
+
 
 
 # Install npm dependencies

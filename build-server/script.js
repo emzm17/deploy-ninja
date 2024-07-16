@@ -1,15 +1,15 @@
 const {exec}=require('child_process');
 const path=require('path');
 const fs= require('fs');
-const {PutObjectCommand } = require("@aws-sdk/client-s3");
+const {PutObjectCommand} = require("@aws-sdk/client-s3");
 const mime=require('mime-types');
-const {Kafka} = require('kafkajs');
 require('dotenv').config();
 const DEPLOYMENT_ID=process.env.DEPLOYMENT_ID;  
 const PROJECT_ID=process.env.PROJECT_ID;
+const { kafka,s3Client } = require('./connection');
 
 
-const { kafka, s3client } = require('./connection');
+
 // Now you can use kafka and s3client objects in your application
 const producer = kafka.producer()
 async function init(){
@@ -53,9 +53,9 @@ async function init(){
                    ContentType: mime.lookup(filepath)
             })
 
-            await s3client.send(command);
+           await s3Client.send(command);
            await publishlog(`uploaded ${file}`) 
-            console.log('uploaded', filepath)
+           console.log('uploaded', filepath)
                 
         }
         console.log('Done..')

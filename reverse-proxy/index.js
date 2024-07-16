@@ -23,6 +23,7 @@ app.use(async (req, res) => {
         
 
         const resolvesTo = `${BASE_PATH}/${project.id}`;
+        console.log(resolvesTo);
         proxy.web(req, res, { target: resolvesTo, changeOrigin: true });
     } catch (error) {
         console.error('Error fetching project:', error.message);
