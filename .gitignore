@@ -23,5 +23,5 @@ build-server/build-script.sh
 api-server/prisma/migrations
 
 Ignore connection files
-build-server/connection.js
+# build-server/connection.js
 api-server/connection.js
