@@ -1,0 +1,47 @@
+name: Build and Push Docker Image to ECR
+
+on:
+  push:
+    branches:
+      - new-prod
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_ACCESS_SECRETKEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        id: ecr_login
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+
+      - name: Build Docker image
+        run: |
+          docker build   -f ../buidl-server/Dockerfile -t ${{ secrets.DOCKER_IMAGE }}:${{ secrets.DOCKER_TAG }} .
+
+      - name: Tag Docker image for ECR
+        run: |
+          docker tag ${{ secrets.DOCKER_IMAGE }}:${{ secrets.DOCKER_TAG }} ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ secrets.DOCKER_TAG }}
+
+      - name: Push Docker image to ECR
+        run: |
+          docker push ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ secrets.DOCKER_TAG }}
+
+      - name: Verify push status
+        run: |
+          if [ $? -eq 0 ]; then
+            echo "Image successfully pushed to ECR: ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ secrets.DOCKER_TAG }}"
+          else
+            echo "Failed to push image to ECR"
+            exit 1
+          fi
