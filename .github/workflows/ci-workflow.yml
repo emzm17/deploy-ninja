@@ -27,7 +27,8 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build   -f  /build-server/Dockerfile -t ${{ secrets.DOCKER_IMAGE }}:${{ secrets.DOCKER_TAG }} /build-server
+          cd build-server 
+          docker build -t ${{ secrets.DOCKER_IMAGE }}:${{ secrets.DOCKER_TAG }} .
 
       - name: Tag Docker image for ECR
         run: |
