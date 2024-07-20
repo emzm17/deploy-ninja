@@ -9,6 +9,21 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+
+
+# Define build arguments
+ARG AWS_ACCESS_KEY_ID
+ARG AWS_REGION
+ARG AWS_SECRET_ACCESS_KEY
+ARG KAFKA_BROKER
+ARG KAFKA_TOPIC
+
+# Set environment variables from build arguments
+ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+ENV KAFKA_BROKER=${KAFKA_BROKER}  
+ENV AWS_REGION=${AWS_REGION}
+
 # Set the working directory
 WORKDIR /home/usr/app
 
