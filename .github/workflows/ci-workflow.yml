@@ -12,34 +12,30 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_ID }}
           aws-secret-access-key: ${{ secrets.AWS_ACCESS_SECRETKEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-        - name: Build Docker image
-          run: |
-            docker build \
-              --build-arg AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_ID }} \
-              --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_ACCESS_SECRETKEY }} \
-              --build-arg KAFKA_BROKER=${{ secrets.KAFKA_BROKER }} \
-              --build-arg AWS_REGION=${{ secrets.AWS_REGION }} \
-              -t ${{ secrets.DOCKER_IMAGE }}:${{ secrets.DOCKER_TAG }} .
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_ID }} \
+            --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_ACCESS_SECRETKEY }} \
+            --build-arg KAFKA_BROKER=${{ secrets.KAFKA_BROKER }} \
+            --build-arg AWS_REGION=${{ secrets.AWS_REGION }} \
+            -t ${{ secrets.DOCKER_IMAGE }}:${{ secrets.DOCKER_TAG }} .
       - name: Log in to Amazon ECR
         id: ecr_login
         run: |
           aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
-
       - name: Tag Docker image for ECR
         run: |
           docker tag ${{ secrets.DOCKER_IMAGE }}:${{ secrets.DOCKER_TAG }} ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ secrets.DOCKER_TAG }}
-
       - name: Push Docker image to ECR
         run: |
           docker push ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ secrets.DOCKER_TAG }}
-
       - name: Verify push status
         run: |
           if [ $? -eq 0 ]; then
