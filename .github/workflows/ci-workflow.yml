@@ -10,12 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: List files
-        run: |
-          ls -la
-          # If package.json is in a subdirectory
-          cd subdirectory
-          ls -la
       - name: Checkout code
         uses: actions/checkout@v2
 
