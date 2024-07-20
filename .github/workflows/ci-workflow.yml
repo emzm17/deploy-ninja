@@ -20,14 +20,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_ACCESS_SECRETKEY }}
           aws-region: ${{ secrets.AWS_REGION }}
       - name: Run tests
-      env:
-        ACCESSKEY: ${{ secrets.AWS_ACCESS_ID }}
-        SECRETKEY: ${{ secrets.AWS_ACCESS_SECRETKEY }}
-        KAFKA_BROKER: ${{ secrets.KAFKA_BROKER }}
-      run: |
-        echo "Running tests with AWS and Kafka secrets"
-        npm test
-        # Or other commands that use the secrets    
+        env:
+          ACCESSKEY: ${{ secrets.AWS_ACCESS_ID }}
+          SECRETKEY: ${{ secrets.AWS_ACCESS_SECRETKEY }}
+          KAFKA_BROKER: ${{ secrets.KAFKA_BROKER }}
+        run: |
+          echo "Running tests with AWS and Kafka secrets"
+          npm test
+          # Or other commands that use the secrets    
 
       - name: Log in to Amazon ECR
         id: ecr_login
