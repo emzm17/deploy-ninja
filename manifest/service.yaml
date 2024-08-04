@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: deploy-ninja-app
+  labels:
+    app: deploy-ninja-app
+spec:
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+      nodePort: 30007
+  selector:
+    app: deploy-ninja-app
+
