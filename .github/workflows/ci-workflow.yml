@@ -1,9 +1,9 @@
-name: Build and Push Docker Image to ECR
+name: Build and Push Docker Image to Docker Hub
 
 on:
   push:
     branches:
-      - new-prod
+      - new-prod-1
 
 jobs:
   build_and_push:
@@ -12,36 +12,30 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_ACCESS_SECRETKEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      
       - name: Build Docker image
         run: |
           cd build-server
           docker build \
-            --build-arg AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_ID }} \
-            --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_ACCESS_SECRETKEY }} \
-            --build-arg KAFKA_BROKER=${{ secrets.KAFKA_BROKER }} \
-            --build-arg AWS_REGION=${{ secrets.AWS_REGION }} \
-            -t ${{ secrets.DOCKER_IMAGE }}:${{ secrets.DOCKER_TAG }} .
-      - name: Log in to Amazon ECR
-        id: ecr_login
+            --build-arg ENDPOINT=${{ secrets.ENDPOINT }} \
+            --build-arg accessKeyId=${{ secrets.accessKeyId }} \
+            --build-arg secretAccessKey=${{ secrets.secretAccessKey }} \
+            --build-arg bucket=${{ secrets.bucket }} \
+            -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}:latest  .
+      
+      - name: Push Docker image to Docker Hub
         run: |
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
-      - name: Tag Docker image for ECR
-        run: |
-          docker tag ${{ secrets.DOCKER_IMAGE }}:${{ secrets.DOCKER_TAG }} ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ secrets.DOCKER_TAG }}
-      - name: Push Docker image to ECR
-        run: |
-          docker push ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ secrets.DOCKER_TAG }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}:latest
+      
       - name: Verify push status
         run: |
-          if [ $? -eq 0 ]; then
-            echo "Image successfully pushed to ECR: ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ secrets.DOCKER_TAG }}"
-          else
-            echo "Failed to push image to ECR"
-            exit 1
-          fi
+            echo "Push image to Docker Hub"
