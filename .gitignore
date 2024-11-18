@@ -25,3 +25,5 @@ api-server/prisma/migrations
 Ignore connection files
 # build-server/connection.js
 api-server/connection.js
+
+build-server/build.sh

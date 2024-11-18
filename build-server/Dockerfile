@@ -1,4 +1,5 @@
-FROM ubuntu:focal
+FROM ubuntu:20.04
+
 
 # Update package list and install necessary packages
 RUN apt-get update && \
@@ -11,26 +12,25 @@ RUN apt-get update && \
 
 
 
-# Define build arguments
-ARG AWS_ACCESS_KEY_ID
-ARG AWS_REGION
-ARG AWS_SECRET_ACCESS_KEY
-ARG KAFKA_BROKER
-ARG KAFKA_TOPIC
+ARG ENDPOINT
+ARG secretAccessKey
+ARG bucket
+ARG accessKeyId  
 
-# Set environment variables from build arguments
-ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-ENV KAFKA_BROKER=${KAFKA_BROKER}  
-ENV AWS_REGION=${AWS_REGION}
 
-# Set the working directory
+ENV ENDPOINT=${ENDPOINT}
+ENV accessKeyId=${accessKeyId}
+ENV bucket=${bucket}
+ENV secretAccessKey=${secretAccessKey}
+
+
+
 WORKDIR /home/usr/app
 
 # Copy necessary files to the working directory
 COPY main.sh main.sh
 COPY script.js script.js
-COPY connection.js connection.js
+# COPY connection.js connection.js
 COPY package*.json ./
 
 
