@@ -26,6 +26,7 @@ jobs:
         run: |
           cd build-server
           docker build \
+            -f Dockerfile \
             --build-arg ENDPOINT=${{ secrets.ENDPOINT }} \
             --build-arg accessKeyId=${{ secrets.accessKeyId }} \
             --build-arg secretAccessKey=${{ secrets.secretAccessKey }} \
