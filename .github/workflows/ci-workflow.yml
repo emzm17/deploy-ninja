@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - new-prod-1
+  pull_request: 
+    branches: 
+      - new-prod-1 
 
 jobs:
   build_and_push:
