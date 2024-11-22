@@ -1,6 +1,14 @@
 const { exec } = require('child_process');
+const dotenv = require('dotenv');
 require('dotenv').config();
 const { createClient } = require('redis');
+
+if (process.env.NODE_ENV === 'production') {
+    dotenv.config({ path: '.env.prod' });
+  } else {
+    dotenv.config({ path: '.env' }); 
+  }
+
 
 // Initialize Redis client
 const redisClient = createClient({

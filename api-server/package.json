@@ -14,8 +14,13 @@
   },
   "devDependencies": {
     "@types/node": "^20.14.5",
+    "cross-env": "^7.0.3",
     "prisma": "^5.15.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
+  },
+  "scripts": {
+    "start:dev": "cross-env NODE_ENV=development node index.js",
+    "start:prod": "cross-env NODE_ENV=production node index.js"
   }
 }

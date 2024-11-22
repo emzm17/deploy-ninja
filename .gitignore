@@ -27,3 +27,5 @@ Ignore connection files
 api-server/connection.js
 
 build-server/build.sh
+build-server/.env.prod
+api-server/.env.prod
