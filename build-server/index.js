@@ -1,61 +1,63 @@
-const { Kafka } = require('kafkajs');
-const {exec}=require('child_process');
+const { exec } = require('child_process');
 require('dotenv').config();
+const { createClient } = require('redis');
 
-const kafka = new Kafka({
-  clientId: process.env.KAFKA_CLIENT,
-  brokers: [process.env.KAFKA_BROKERS], 
+// Initialize Redis client
+const redisClient = createClient({
+    url: process.env.REDIS_URL, // Redis connection URL
 });
-const consumer = kafka.consumer({ groupId: process.env.KAFKA_CONSUMER_GROUP });
 
-
-
+// Function to start a Docker container
 async function startDockerContainer(githubUrl, projectId) {
-  const dockerImage = process.env.DOCKER_IMAGE; // Replace with the desired Docker Hub image
-  const dockerCommand = `docker run --rm  -e GIT_REPO_URL=${githubUrl} -e PROJECT_ID=${projectId} ${dockerImage}`;
-  
-  exec(dockerCommand, (error, stdout, stderr) => {
-      if (error) {
-          console.error(`Error starting Docker container: ${error.message}`);
-          return;
-      }
-      if (stderr) {
-          console.error(`Docker error: ${stderr}`);
-          return;
-      }
-      console.log(`Docker container started successfully: ${stdout}`);
-  });
+    const dockerImage = process.env.DOCKER_IMAGE; // Docker Hub image
+    const dockerCommand = `docker run --rm -e GIT_REPO_URL=${githubUrl} -e PROJECT_ID=${projectId} ${dockerImage}`;
+    
+    exec(dockerCommand, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error starting Docker container: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.error(`Docker error: ${stderr}`);
+            return;
+        }
+        console.log(`Docker container started successfully: ${stdout}`);
+    });
 }
 
-
-// Function to start Docker container and handle task processing
+// Function to process a single task
 async function processTask(githubUrl, projectId) {
-  console.log(`Processing project with GitHub URL: ${githubUrl} and Project ID: ${projectId}`);
-  // Implement Docker start, build, and upload logic here
-  await startDockerContainer(githubUrl, projectId);
+    console.log(`Processing project with GitHub URL: ${githubUrl} and Project ID: ${projectId}`);
+    await startDockerContainer(githubUrl, projectId);
 }
 
-async function startConsumer() {
-  await consumer.connect();
-  await consumer.subscribe({ topic: process.env.KAFKA_TOPIC, fromBeginning: true });
+// Function to process tasks from the Redis queue
+async function processTaskMessages() {
+    try {
+        await redisClient.connect();
+        const queueName = process.env.REDIS_QUEUE;
 
-  await consumer.run({
-      eachMessage: async ({ topic, partition, message }) => {
-          const task = JSON.parse(message.value.toString());
-          const githubUrl = task.githubUrl;
-          const projectId = task.projectId;
-          
-          // Process the task message
-          await processTask(githubUrl, projectId);
-      },
-  });
+        console.log(`Listening for tasks on queue: ${queueName}`);
 
-  console.log('Consumer is listening to deploy-tasks topic');
+        while (true) {
+            try {
+                // Wait for a message from the queue
+                const result = await redisClient.brPop(queueName, 0); // Blocks indefinitely
+                const task = JSON.parse(result.element);
+                // Validate task properties
+                // Process the task
+                await processTask(task.githubUrl, task.projectId);
+            } catch (innerError) {
+                console.error('Error processing individual task:', innerError);
+            }
+        }
+    } catch (error) {
+        console.error('Error setting up task processor:', error);
+    } finally {
+        // Disconnect from Redis
+        await redisClient.disconnect();
+    }
 }
 
-
-
-
-
-// Start the consumer
-startConsumer();
+// Start processing messages
+processTaskMessages();
