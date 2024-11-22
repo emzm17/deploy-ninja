@@ -2,6 +2,13 @@
 FROM node:14
 
 # Set the working directory inside the container
+ARG REDIS_URL
+ARG REDIS_QUEUE
+
+
+ENV REDIS_URL=${REDIS_URL}
+ENV REDIS_QUEUE=${REDIS_QUEUE}
+
 WORKDIR /usr/src/app
 
 # Copy package.json and package-lock.json (if available)
