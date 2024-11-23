@@ -3,10 +3,7 @@ name: Build and Push Docker Image to Docker Hub
 on:
   pull_request: 
     branches: 
-      - new-prod-1 
-  push:
-    branches:
-      - new-prod-1      
+      - new-prod-1  
 
 jobs:
   build_and_push:
