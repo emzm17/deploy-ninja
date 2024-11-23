@@ -1,9 +1,6 @@
 name: Build and Push Docker Image to Docker Hub
 
 on:
-  push:
-    branches:
-      - new-prod-1
   pull_request: 
     branches: 
       - new-prod-1 
@@ -36,14 +33,14 @@ jobs:
             --build-arg bucket=${{ secrets.bucket }} \
             -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}:latest  .
 
-       - name: Build Deployment Image
-         run: |
-            cd build-server 
-            docker build \
-            -f Dockerfile.prod \
-            --build-arg REDIS_URL=${{ secrets.REDIS_URL }} \
-            --build-arg REDIS_QUEUE=${{ secrets.REDIS_QUEUE }} \
-            -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE1}}:latest  .
+      - name: Build Deployment Image
+        run: |
+          cd build-server 
+          docker build \
+          -f Dockerfile.prod \
+          --build-arg REDIS_URL=${{ secrets.REDIS_URL }} \
+          --build-arg REDIS_QUEUE=${{ secrets.REDIS_QUEUE }} \
+          -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE1}}:latest  .
 
       
       - name: Push Docker image to Docker Hub
