@@ -8,7 +8,6 @@ on:
     branches: 
       - new-prod-1 
 
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -30,6 +29,18 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} << 'EOF'
             cd /home/${{ secrets.SERVER_USERNAME }}/app
-            docker kill build-server
-            docker run --name build-server emzm17/build-server:latest
+
+            # Stop and remove the existing container if it exists
+            if sudo docker ps -a --filter "name=build-server" | grep build-server; then
+              echo "Stopping and removing the existing build-server container..."
+              sudo docker stop build-server || true
+              sudo docker rm build-server || true
+            fi
+
+            # Pull the latest image and run the container
+            echo "Pulling the latest Docker image..."
+            sudo docker pull emzm17/build-server:latest
+
+            echo "Starting a new build-server container..."
+            sudo docker run -d --name build-server emzm17/build-server:latest
           EOF
