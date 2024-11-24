@@ -17,7 +17,6 @@ ARG secretAccessKey
 ARG bucket
 ARG accessKeyId  
 
-
 ENV ENDPOINT=${ENDPOINT}
 ENV accessKeyId=${accessKeyId}
 ENV bucket=${bucket}

@@ -4,10 +4,12 @@ FROM node:14
 # Set the working directory inside the container
 ARG REDIS_URL
 ARG REDIS_QUEUE
+ARG DOCKER_IMAGE
 
 
 ENV REDIS_URL=${REDIS_URL}
 ENV REDIS_QUEUE=${REDIS_QUEUE}
+ENV DOCKER_IMAGE=${DOCKER_IMAGE}
 
 WORKDIR /usr/src/app
 
