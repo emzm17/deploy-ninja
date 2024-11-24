@@ -1,7 +1,6 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const dotenv = require('dotenv');
-require('dotenv').config();
 const { createClient } = require('redis');
 const isValidGitHubUrl = require('./utils');
 
@@ -10,6 +9,8 @@ if (process.env.NODE_ENV === 'production') {
   } else {
     dotenv.config({ path: '.env' }); 
   }
+
+console.log(process.env.REDIS_URL,process.env.NODE_ENV);  
 
 const app = express();
 const PORT = process.env.PORT || 8080;

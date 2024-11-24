@@ -1,6 +1,5 @@
 const { exec } = require('child_process');
 const dotenv = require('dotenv');
-require('dotenv').config();
 const { createClient } = require('redis');
 
 if (process.env.NODE_ENV === 'production') {
@@ -9,7 +8,7 @@ if (process.env.NODE_ENV === 'production') {
     dotenv.config({ path: '.env' }); 
   }
 
-
+console.log(process.env.REDIS_URL);
 // Initialize Redis client
 const redisClient = createClient({
     url: process.env.REDIS_URL, // Redis connection URL
@@ -18,7 +17,7 @@ const redisClient = createClient({
 // Function to start a Docker container
 async function startDockerContainer(githubUrl, projectId) {
     const dockerImage = process.env.DOCKER_IMAGE; // Docker Hub image
-    const dockerCommand = `docker run --rm -e GIT_REPO_URL=${githubUrl} -e PROJECT_ID=${projectId} ${dockerImage}`;
+    const dockerCommand = `sudo docker run --rm -e GIT_REPO_URL=${githubUrl} -e PROJECT_ID=${projectId} ${dockerImage}`;
     
     exec(dockerCommand, (error, stdout, stderr) => {
         if (error) {
