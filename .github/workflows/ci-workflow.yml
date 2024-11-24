@@ -1,13 +1,12 @@
 name: Build and Push Docker Image to Docker Hub
 
 on:
-  pull_request: 
-    branches: 
-      - new-prod-1  
-  push: 
-    branches: 
-      - new-prod-1    
-
+  pull_request:
+    branches:
+      - new-prod-1
+  push:
+    branches:
+      - new-prod-1
 
 jobs:
   build_and_push:
@@ -35,8 +34,8 @@ jobs:
             --build-arg accessKeyId=${{ secrets.accessKeyId }} \
             --build-arg secretAccessKey=${{ secrets.secretAccessKey }} \
             --build-arg bucket=${{ secrets.bucket }} \
-            -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}:latest  .
-
+            -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}:latest .
+      
       - name: Build Deployment Image
         run: |
           cd build-server 
@@ -44,17 +43,13 @@ jobs:
             -f Dockerfile.prod \
             --build-arg REDIS_URL=${{ secrets.REDIS_URL }} \
             --build-arg REDIS_QUEUE=${{ secrets.REDIS_QUEUE }} \
-            --build-arg DOCKER_IMAGE=${{secrets.DOCKER_IMAGE}}
-            -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE1}}:latest  .
-
+            --build-arg DOCKER_IMAGE=${{ secrets.DOCKER_IMAGE1 }} \
+            -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE1 }}:latest .
       
-      - name: Push Docker image to Docker Hub
+      - name: Push Docker images to Docker Hub
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}:latest
-      - name: Push Docker image to Docker Hub
-        run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE1 }}:latest      
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE1 }}:latest
       
       - name: Verify push status
-        run: |
-            echo "Push image to Docker Hub"
+        run: echo "Push image to Docker Hub"
