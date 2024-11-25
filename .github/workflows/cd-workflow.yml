@@ -20,6 +20,8 @@ jobs:
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.SERVER_PRIVATE_KEY }}
+        env: 
+          DEBUG_SSH: true  
 
 
       - name: SSH into Server and Check for Updates
