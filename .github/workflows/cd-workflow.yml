@@ -16,29 +16,49 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-
-      - name: Install sshpass 
+      - name: SSH into Server and Check for Updates 
         run: | 
-         sudo apt-get update
-         sudo apt-get install -y sshpass 
-        shell: /usr/bin/bash -e {0}
+        sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} << 'EOF' 
+        # Navigate to application directory 
+        cd /${{ secrets.SERVER_USERNAME }}/app 
+        # Fetch the latest changes from the remote 
+        git fetch 
 
+        # Get the current branch name 
+        CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD) 
+
+        # Get the latest commit hash on the current branch 
+        LOCAL_COMMIT=$(git rev-parse $CURRENT_BRANCH) 
+
+        # Get the latest commit hash from the remote repository 
+        REMOTE_COMMIT=$(git rev-parse origin/$CURRENT_BRANCH) 
+
+        # Compare the local and remote commit hashes 
+        if [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then 
+          echo "New commits found. Proceeding with deployment..." 
+        else 
+          echo "Already up-to-date. No new commits found." 
+          exit 0 
+        fi 
+        EOF  
+
+    - name: SSH into server and deploy 
+      if: success() # Only run this step if the previous step was successful
+      run: | 
+      sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} << 'EOF'
+      
       - name: SSH into Server and Deploy
         run: |
           sshpass -p ${{ secrets.SERVER_PASSWORD }} ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} << 'EOF'
-            cd /home/${{ secrets.SERVER_USERNAME }}/app
-
-            # Stop and remove the existing container if it exists
-            if sudo docker ps -a --filter "name=build-server" | grep build-server; then
-              echo "Stopping and removing the existing build-server container..."
-              sudo docker stop build-server || true
-              sudo docker rm build-server || true
-            fi
-
-            # Pull the latest image and run the container
-            echo "Pulling the latest Docker image..."
-            sudo docker pull emzm17/build-server:latest
-
-            echo "Starting a new build-server container..."
-            sudo docker run -d --name build-server emzm17/build-server:latest
+          # Navigate to application directory 
+          cd /${{ secrets.SERVER_USERNAME }}/app 
+          # Stop the existing application 
+          echo "Stopping the existing application..."
+           ./root/app/node_script.sh      // script to kill all runnning node process 
+          # Pull the latest changes from the repository 
+          echo "Pulling latest changes..." 
+          git pull origin new-prod-1
+          # Start the new application 
+          echo "Starting the new application..." 
+          npm run start:prod
           EOF
