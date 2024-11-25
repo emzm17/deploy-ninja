@@ -6,7 +6,8 @@ if (process.env.NODE_ENV === 'production') {
   } else {
     dotenv.config({ path: '.env' }); 
   }
-
+const dockerImage = process.env.DOCKER_IMAGE; // Docker Hub image  
+console.log(dockerImage);
 console.log(process.env.REDIS_URL);
 // Initialize Redis client
 const redisClient = createClient({
@@ -15,9 +16,7 @@ const redisClient = createClient({
 
 // Function to start a Docker container
 async function startDockerContainer(githubUrl, projectId) {
-    const dockerImage = process.env.DOCKER_IMAGE; // Docker Hub image
     const dockerCommand = `docker run --rm -e GIT_REPO_URL=${githubUrl} -e PROJECT_ID=${projectId} ${dockerImage}`;
-    console.log(dockerImage);
     
     exec(dockerCommand, (error, stdout, stderr) => {
         if (error) {
