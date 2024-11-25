@@ -20,6 +20,7 @@ jobs:
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.SERVER_PRIVATE_KEY }}
+          ssh-passphrase: ${{ secrets.SERVER_PASSPHRASE }}
 
 
       - name: SSH into Server and Check for Updates
