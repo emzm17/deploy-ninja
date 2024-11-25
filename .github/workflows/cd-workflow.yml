@@ -16,12 +16,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
-          ssh-private-key: ${{ secrets.SERVER_PRIVATE_KEY }}
-          ssh-passphrase: ${{ secrets.SERVER_PASSPHRASE }}
-
+       - name: Set up SSH with Passphrase
+        run: |
+          sudo apt-get update && sudo apt-get install -y expect
+          eval "$(ssh-agent -s)"
+          echo "${{ secrets.SERVER_PRIVATE_KEY }}" > private_key
+          chmod 600 private_key
+          /usr/bin/expect << EOF
+          spawn ssh-add private_key
+          expect "Enter passphrase for private_key:"
+          send "${{ secrets.SERVER_PASSPHRASE }}\r"
+          expect eof
+          EOF
+        env:
+          SERVER_PASSPHRASE: ${{ secrets.SERVER_PASSPHRASE }}
      
 
       - name: SSH into Server and Check for Updates
