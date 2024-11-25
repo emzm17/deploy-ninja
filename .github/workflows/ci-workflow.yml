@@ -38,7 +38,6 @@ jobs:
       
       - name: Build Deployment Image
         run: |
-          cd build-server 
           docker build \
             -f Dockerfile.prod \
             --build-arg REDIS_URL=${{ secrets.REDIS_URL }} \
