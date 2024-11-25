@@ -16,7 +16,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-       - name: Set up SSH with Passphrase
+      - name: Set up SSH with Passphrase
         run: |
           sudo apt-get update && sudo apt-get install -y expect
           eval "$(ssh-agent -s)"
