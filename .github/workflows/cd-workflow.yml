@@ -18,24 +18,24 @@ jobs:
 
       - name: SSH into Server and Check for Updates
         run: |
-          sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} << 'EOF'
+          sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }}" <<EOF
           # Navigate to application directory
-          cd /${{ secrets.SERVER_USERNAME }}/app
-          
+          cd /home/${{ secrets.SERVER_USERNAME }}/app
+
           # Fetch the latest changes from the remote
           git fetch
 
           # Get the current branch name
-          CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          CURRENT_BRANCH=\$(git rev-parse --abbrev-ref HEAD)
 
           # Get the latest commit hash on the current branch
-          LOCAL_COMMIT=$(git rev-parse $CURRENT_BRANCH)
+          LOCAL_COMMIT=\$(git rev-parse HEAD)
 
           # Get the latest commit hash from the remote repository
-          REMOTE_COMMIT=$(git rev-parse origin/$CURRENT_BRANCH)
+          REMOTE_COMMIT=\$(git rev-parse origin/\$CURRENT_BRANCH)
 
           # Compare the local and remote commit hashes
-          if [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then
+          if [ "\$LOCAL_COMMIT" != "\$REMOTE_COMMIT" ]; then
             echo "New commits found. Proceeding with deployment..."
           else
             echo "Already up-to-date. No new commits found."
