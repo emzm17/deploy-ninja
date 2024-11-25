@@ -38,11 +38,11 @@ jobs:
       
       - name: Build Deployment Image
         run: |
-         cd build-server 
-         docker build \ 
-            -f Dockerfile.prod \ 
-            --build-arg REDIS_URL=${{ secrets.REDIS_URL }} \ 
-            --build-arg REDIS_QUEUE=${{ secrets.REDIS_QUEUE }} \ 
+          cd build-server 
+          docker build \
+            -f Dockerfile.prod \
+            --build-arg REDIS_URL=${{ secrets.REDIS_URL }} \
+            --build-arg REDIS_QUEUE=${{ secrets.REDIS_QUEUE }} \
             --build-arg DOCKER_IMAGE=${{ secrets.DOCKER_IMAGE2 }} \
             -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE1 }}:latest .
       
