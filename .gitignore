@@ -31,4 +31,4 @@ build-server/.env.prod
 api-server/.env.prod
 
 cd-worker/
-github-deploy-page/
+deploy-ninja-ui/
