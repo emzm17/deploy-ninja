@@ -3,6 +3,9 @@ const { v4: uuidv4 } = require('uuid');
 const dotenv = require('dotenv');
 const { createClient } = require('redis');
 const isValidGitHubUrl = require('./utils');
+const cors = require('cors');
+
+
 
 if (process.env.NODE_ENV === 'production') {
     dotenv.config({ path: '.env.prod' });
@@ -14,6 +17,8 @@ console.log(process.env.REDIS_URL,process.env.NODE_ENV);
 
 const app = express();
 const PORT = process.env.PORT || 8080;
+// Allow all origins
+app.use(cors());
 
 // Middleware
 app.use(express.json());
@@ -51,6 +56,18 @@ app.post('/deploy', async (req, res) => {
     res.status(200).json({ message: 'Project data received', githubUrl, myUUID });
 });
 
+
+
+app.post('/webhook', (req, res) => {
+    const { event, objectData, timestamp } = req.body;
+    console.log(`Event: ${event}`);
+    console.log(`Object Data: ${JSON.stringify(objectData)}`);
+    console.log(`Timestamp: ${timestamp}`);
+  
+    // Perform any desired actions, like logging, database operations, etc.
+  
+    res.status(200).send('Webhook received');
+  });
 async function startServer() {
     try {
         if (!process.env.REDIS_URL || !process.env.REDIS_QUEUE) {
