@@ -13,68 +13,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up SSH with Passphrase
-        run: |
-          sudo apt-get update && sudo apt-get install -y expect
-          eval "$(ssh-agent -s)"
-          echo "${{ secrets.SERVER_PRIVATE_KEY }}" > private_key
-          chmod 600 private_key
-          /usr/bin/expect << EOF
-          spawn ssh-add private_key
-          expect "Enter passphrase for private_key:"
-          send "${{ secrets.SERVER_PASSPHRASE }}\r"
-          expect eof
-          EOF
-        env:
-          SERVER_PASSPHRASE: ${{ secrets.SERVER_PASSPHRASE }}
-     
-
-      - name: SSH into Server and Check for Updates
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} <<EOF
-          # Navigate to application directory
-          cd /home/${{ secrets.SERVER_USERNAME }}/app
-
-          # Fetch the latest changes from the remote
-          git fetch
-
-          # Get the current branch name
-          CURRENT_BRANCH=\$(git rev-parse --abbrev-ref HEAD)
-
-          # Get the latest commit hash on the current branch
-          LOCAL_COMMIT=\$(git rev-parse HEAD)
-
-          # Get the latest commit hash from the remote repository
-          REMOTE_COMMIT=\$(git rev-parse origin/\$CURRENT_BRANCH)
-
-          # Compare the local and remote commit hashes
-          if [ "\$LOCAL_COMMIT" != "\$REMOTE_COMMIT" ]; then
-            echo "New commits found. Proceeding with deployment..."
-          else
-            echo "Already up-to-date. No new commits found."
-            exit 0
-          fi
-          EOF
-
-      - name: SSH into Server and Deploy
-        if: success() # Only run this step if the previous step was successful
-        run: |
-          sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} << 'EOF'
-          # Navigate to application directory
-          cd /${{ secrets.SERVER_USERNAME }}/app
-          
-          # Stop the existing application
-          echo "Stopping the existing application..."
-          ./root/app/node_script.sh # script to kill all running node processes
-
-          # Pull the latest changes from the repository
-          echo "Pulling latest changes..."
-          git pull origin new-prod-1
-
-          # Start the new application
-          echo "Starting the new application..."
-          npm run start:prod
-          EOF
+      - name: ls -a via ssh
+      uses: fifsky/ssh-action@master
+      with:
+        command: |
+          cd /root/app
+          ls -a
+        host: ${{ secrets.SERVER_HOST }}
+        user: root
+        key: ${{ secrets.SERVER_PRIVATE_KEY}}
