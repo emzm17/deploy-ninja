@@ -13,12 +13,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: ls -a via ssh
-      uses: fifsky/ssh-action@master
-      with:
-        command: |
-          cd /root/app
-          ls -a
-        host: ${{ secrets.SERVER_HOST }}
-        user: root
-        key: ${{ secrets.SERVER_PRIVATE_KEY}}
+        uses: fifsky/ssh-action@master
+        with:
+          command: |
+            cd /root/app
+            ls -a
+          host: ${{ secrets.SERVER_HOST }}
+          user: root
+          key: ${{ secrets.SERVER_PRIVATE_KEY }}
