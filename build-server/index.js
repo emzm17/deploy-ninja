@@ -7,8 +7,6 @@ if (process.env.NODE_ENV === 'production') {
     dotenv.config({ path: '.env' }); 
   }
 const dockerImage = process.env.DOCKER_IMAGE; // Docker Hub image  
-console.log(dockerImage);
-console.log(process.env.REDIS_URL);
 // Initialize Redis client
 const redisClient = createClient({
     url: process.env.REDIS_URL, // Redis connection URL
