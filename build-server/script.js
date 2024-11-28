@@ -81,7 +81,6 @@ init();
 
 async function publishMessage(channel, message) {
   await redisClient.publish(channel, JSON.stringify(message));
-  console.log(message.PROJECT_ID,message.message);
   // Disconnect after publishing
   await redisClient.disconnect();
 }
