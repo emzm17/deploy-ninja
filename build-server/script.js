@@ -8,6 +8,7 @@ const redisClient = createClient({
   url: process.env.REDIS_URL // Redis connection URL
 });
 const redisChannel=process.env.channel;
+console.log(redisChannel,REDIS_URL);
 const PROJECT_ID=process.env.PROJECT_ID;
 const { S3Client, PutObjectCommand} = require("@aws-sdk/client-s3");
 
@@ -80,6 +81,7 @@ init();
 
 async function publishMessage(channel, message) {
   await redisClient.publish(channel, JSON.stringify(message));
+  console.log(message.PROJECT_ID,message.message);
   // Disconnect after publishing
   await redisClient.disconnect();
 }
