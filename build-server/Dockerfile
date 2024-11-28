@@ -16,11 +16,15 @@ ARG ENDPOINT
 ARG secretAccessKey
 ARG bucket
 ARG accessKeyId  
+ARG REDIS_URL
+ARG channel
 
 ENV ENDPOINT=${ENDPOINT}
 ENV accessKeyId=${accessKeyId}
 ENV bucket=${bucket}
 ENV secretAccessKey=${secretAccessKey}
+ENV REDIS_URL=${REDIS_URL}
+ENV channel=${channel}
 
 
 
