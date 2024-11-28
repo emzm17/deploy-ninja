@@ -13,7 +13,8 @@ if (process.env.NODE_ENV === 'production') {
     dotenv.config({ path: '.env' }); 
   }
 
-console.log(process.env.REDIS_URL,process.env.NODE_ENV);  
+const redisChannel=process.env.channel;  
+
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -28,6 +29,11 @@ const redisClient = createClient({
     url: process.env.REDIS_URL // Redis connection URL
 });
 
+const queueClient = createClient({
+  url: process.env.REDIS_URL // Redis connection URL
+});
+
+
 async function sendTaskMessage(githubUrl, projectId) {
     if (!githubUrl || !projectId) {
         console.error('Invalid input: githubUrl and projectId are required');
@@ -36,7 +42,7 @@ async function sendTaskMessage(githubUrl, projectId) {
     try {
         const message = JSON.stringify({ githubUrl, projectId });
         const queueName = process.env.REDIS_QUEUE;
-        await redisClient.rPush(queueName, message);
+        await queueClient.rPush(queueName, message);
         console.log(`Task message sent for Project ID: ${projectId}`);
     } catch (error) {
         console.error('Error sending task message:', error);
@@ -56,18 +62,23 @@ app.post('/deploy', async (req, res) => {
     res.status(200).json({ message: 'Project data received', githubUrl, myUUID });
 });
 
-
-
-app.post('/webhook', (req, res) => {
-    const { event, objectData, timestamp } = req.body;
-    console.log(`Event: ${event}`);
-    console.log(`Object Data: ${JSON.stringify(objectData)}`);
-    console.log(`Timestamp: ${timestamp}`);
+async function startSubscriber(channel) {
+    try {
+      await redisClient.subscribe(channel, (message) => {
+        try {
+          const data = JSON.parse(message); // Parse JSON message
+          console.log(`Received JSON message on "${channel}":`, data.project_id, ",", data.message);
+        } catch (err) {
+          console.error(`Error parsing message on "${channel}":`, err.message);
+        }
+      });
+      console.log(`Subscribed to channel: "${channel}"`);
+    } catch (err) {
+      console.error(`Error subscribing to channel "${channel}":`, err.message);
+    }
+  }
   
-    // Perform any desired actions, like logging, database operations, etc.
-  
-    res.status(200).send('Webhook received');
-  });
+
 async function startServer() {
     try {
         if (!process.env.REDIS_URL || !process.env.REDIS_QUEUE) {
@@ -75,8 +86,9 @@ async function startServer() {
         }
 
         await redisClient.connect();
+        await queueClient.connect();
         console.log('Connected to Redis');
-
+        startSubscriber(redisChannel);
         app.listen(PORT, () => {
             console.log(`API Server is running on port ${PORT}`);
         });
@@ -85,6 +97,7 @@ async function startServer() {
         process.on('SIGINT', async () => {
             console.log('Shutting down gracefully...');
             await redisClient.disconnect();
+            await queueClient.disconnect();
             process.exit(0);
         });
     } catch (error) {
@@ -94,3 +107,4 @@ async function startServer() {
 }
 
 startServer();
+
