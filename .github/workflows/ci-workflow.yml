@@ -32,6 +32,8 @@ jobs:
             --build-arg accessKeyId=${{ secrets.accessKeyId }} \
             --build-arg secretAccessKey=${{ secrets.secretAccessKey }} \
             --build-arg bucket=${{ secrets.bucket }} \
+            --build-arg channel=${{ secrets.channel }} \
+            --build-arg REDIS_URL=${{ secrets.REDIS_URL }} \
             -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}:latest .
       
       - name: Push Docker images to Docker Hub
