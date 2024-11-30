@@ -1,9 +1,6 @@
 name: CD Pipeline
 
 on:
-  push:
-    branches:
-      - new-prod-1
   pull_request:
     branches:
       - new-prod-1
