@@ -8,7 +8,7 @@ const redisClient = createClient({
   url: process.env.REDIS_URL // Redis connection URL
 });
 const redisChannel=process.env.channel;
-console.log(redisChannel,process.env.REDIS_URL);
+const subdomain=process.env.SUBDOMAIN;
 const PROJECT_ID=process.env.PROJECT_ID;
 const { S3Client, PutObjectCommand} = require("@aws-sdk/client-s3");
 
@@ -53,7 +53,7 @@ async function init(){
         const distFolderPath=path.join(__dirname,'output','dist');
         const distFolderContents= await fs.readdirSync(distFolderPath,{recursive:true});
         // this will give us all the filepath 
-        const message={project_id:PROJECT_ID,message:"Deploying"}
+        const message={subDomain:subdomain,project_id:PROJECT_ID}
         publishMessage(redisChannel,message)
         for (const file of distFolderContents) {
             const filepath = path.join(distFolderPath, file);
@@ -62,7 +62,7 @@ async function init(){
             console.log('uploading', filepath)
             const command = new PutObjectCommand({
                   Bucket: process.env.bucket,
-                  Key: `__outputs/${PROJECT_ID}/${file}`,
+                  Key: `__outputs/${subdomain}/${file}`,
                   Body: fs.createReadStream(filepath),
                   ContentType: mime.lookup(filepath),
             });
