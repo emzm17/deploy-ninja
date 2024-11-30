@@ -2,7 +2,7 @@
   "dependencies": {
     "@aws-sdk/client-ecs": "^3.598.0",
     "@clickhouse/client": "^1.1.0",
-    "@prisma/client": "^5.15.1",
+    "@prisma/client": "^5.22.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
@@ -16,7 +16,7 @@
   "devDependencies": {
     "@types/node": "^20.14.5",
     "cross-env": "^7.0.3",
-    "prisma": "^5.15.1",
+    "prisma": "^5.22.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
   },

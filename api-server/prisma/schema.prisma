@@ -1,0 +1,20 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model deployment {
+  id        String            @id @db.Char(36)
+  subdomain String            @unique(map: "subdomain") @db.VarChar(255)
+  status    deployment_status
+}
+
+enum deployment_status {
+  PENDING
+  ACTIVE
+  INACTIVE
+}
