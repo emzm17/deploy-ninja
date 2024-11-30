@@ -4,9 +4,13 @@ const dotenv = require('dotenv');
 const { createClient } = require('redis');
 const isValidGitHubUrl = require('./utils');
 const cors = require('cors');
+const { PrismaClient } = require('@prisma/client');
+const {generateSlug} = require('random-word-slugs');
 
 
 
+
+const prisma = new PrismaClient();
 if (process.env.NODE_ENV === 'production') {
     dotenv.config({ path: '.env.prod' });
   } else {
@@ -34,16 +38,16 @@ const queueClient = createClient({
 });
 
 
-async function sendTaskMessage(githubUrl, projectId) {
-    if (!githubUrl || !projectId) {
-        console.error('Invalid input: githubUrl and projectId are required');
+async function sendTaskMessage(githubUrl, subdomain, uuid) {
+    if (!githubUrl) {
+        console.error('Invalid input: githubUrl are required');
         return;
     }
     try {
-        const message = JSON.stringify({ githubUrl, projectId });
+        const message = JSON.stringify({ githubUrl, subdomain, uuid });
         const queueName = process.env.REDIS_QUEUE;
         await queueClient.rPush(queueName, message);
-        console.log(`Task message sent for Project ID: ${projectId}`);
+        console.log(`Task message sent for Project ID: ${uuid} , Subdomain: ${subdomain}` );
     } catch (error) {
         console.error('Error sending task message:', error);
     }
@@ -56,26 +60,60 @@ app.post('/deploy', async (req, res) => {
     if (!githubUrl || !isValidGitHubUrl(githubUrl)) {
         return res.status(400).json({ error: 'A valid GitHub URL is required' });
     }
-
     console.log(`Received GitHub URL: ${githubUrl}`);
-    await sendTaskMessage(githubUrl, myUUID);
-    res.status(200).json({ message: 'Project data received', githubUrl, myUUID });
+    const subDomain=generateSlug();
+    await sendTaskMessage(githubUrl,subDomain,myUUID);
+    try{
+      const newRecord= await prisma.deployment.create({
+        data: {
+          id: myUUID,
+          subdomain: subDomain,
+          status:'PENDING'
+        }
+       
+  });
+  console.log("New recored inserted",githubUrl,subDomain);
+  res.status(200).json({ message: 'Project data received',subDomain,myUUID});
+}catch(err){
+  console.error( err.message);
+  res.status(500).json({ error: 'Internal Server Error' });
+}    
 });
 
-async function startSubscriber(channel) {
-    try {
-      await redisClient.subscribe(channel, (message) => {
+
+// Need to update
+
+async function startSubscriber(channel,message) {
+  try {
+    await redisClient.subscribe(channel, async (rawMessage) => {
         try {
-          const data = JSON.parse(message); // Parse JSON message
-          console.log(`Received JSON message on "${channel}":`, data.project_id, ",", data.message);
+            // Parse JSON message
+            const parsedMessage = JSON.parse(rawMessage);
+            console.log(`Received JSON message on "${channel}":`, parsedMessage.subDomain, ",", parsedMessage.project_id);
+
+            // Extract Message
+            const new_subdomain = parsedMessage.subDomain;
+            const project_ID=parsedMessage.project_id;
+
+            // Update the deployment record in Prisma
+
+          
+            const updatedRecord = await prisma.deployment.update({
+                where: {id: project_ID },
+                data: {
+                    status: 'ACTIVE',
+                },
+            });
         } catch (err) {
-          console.error(`Error parsing message on "${channel}":`, err.message);
+            console.error(`Error processing message on "${channel}":`, err.message);
         }
-      });
-      console.log(`Subscribed to channel: "${channel}"`);
-    } catch (err) {
-      console.error(`Error subscribing to channel "${channel}":`, err.message);
-    }
+    });
+
+    console.log(`Subscribed to channel: "${channel}"`);
+} catch (err) {
+    console.error(`Error subscribing to channel "${channel}":`, err.message);
+}
+
   }
   
 

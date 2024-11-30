@@ -13,7 +13,7 @@ const redisClient = createClient({
 });
 
 // Function to start a Docker container
-async function startDockerContainer(githubUrl, subdomain,uuid) {
+async function startDockerContainer(githubUrl,subdomain,uuid) {
     const dockerCommand = `docker run --rm -e GIT_REPO_URL=${githubUrl} -e SUBDOMAIN=${subdomain}  -e PROJECT_ID=${uuid}   ${dockerImage}`;
     
     exec(dockerCommand, (error, stdout, stderr) => {
