@@ -10,6 +10,7 @@ const redisClient = createClient({
 const redisChannel=process.env.channel;
 const subdomain=process.env.SUBDOMAIN;
 const PROJECT_ID=process.env.PROJECT_ID;
+console.log(subdomain);
 const { S3Client, PutObjectCommand} = require("@aws-sdk/client-s3");
 
 
