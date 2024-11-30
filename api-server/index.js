@@ -38,6 +38,35 @@ const queueClient = createClient({
 });
 
 
+app.get('/status', async (req, res) => {
+    try {
+      const { id, subdomain } = req.query; // Use query parameters for GET requests
+      if (!id || !subdomain) {
+        return res.status(400).json({ error: 'uuid and subdomain are required.' });
+      }
+  
+      const record = await prisma.deployment.findFirst({
+        where: {
+          id: id,
+        },
+      });
+  
+      if (!record) {
+        return res.status(404).json({ error: 'Record not found.' });
+      }
+  
+      res.status(200).json({
+        status: record.status,
+        subdomain: record.subdomain,
+      });
+    } catch (error) {
+      console.error('Error fetching status:', error.message);
+      res.status(500).json({ error: 'Internal server error.' });
+    }
+  });
+  
+
+
 async function sendTaskMessage(githubUrl, subdomain, uuid) {
     if (!githubUrl) {
         console.error('Invalid input: githubUrl are required');
@@ -47,7 +76,6 @@ async function sendTaskMessage(githubUrl, subdomain, uuid) {
         const message = JSON.stringify({ githubUrl, subdomain, uuid });
         const queueName = process.env.REDIS_QUEUE;
         await queueClient.rPush(queueName, message);
-        console.log(`Task message sent for Project ID: ${uuid} , Subdomain: ${subdomain}` );
     } catch (error) {
         console.error('Error sending task message:', error);
     }
@@ -60,7 +88,6 @@ app.post('/deploy', async (req, res) => {
     if (!githubUrl || !isValidGitHubUrl(githubUrl)) {
         return res.status(400).json({ error: 'A valid GitHub URL is required' });
     }
-    console.log(`Received GitHub URL: ${githubUrl}`);
     const subDomain=generateSlug();
     await sendTaskMessage(githubUrl,subDomain,myUUID);
     try{
@@ -72,8 +99,7 @@ app.post('/deploy', async (req, res) => {
         }
        
   });
-  console.log("New recored inserted",githubUrl,subDomain);
-  res.status(200).json({ message: 'Project data received',subDomain,myUUID});
+  res.status(200).json({ message: 'Project data received',subdomain:subDomain,id:myUUID});
 }catch(err){
   console.error( err.message);
   res.status(500).json({ error: 'Internal Server Error' });
@@ -89,8 +115,6 @@ async function startSubscriber(channel,message) {
         try {
             // Parse JSON message
             const parsedMessage = JSON.parse(rawMessage);
-            console.log(`Received JSON message on "${channel}":`, parsedMessage.subDomain, ",", parsedMessage.project_id);
-
             // Extract Message
             const new_subdomain = parsedMessage.subDomain;
             const project_ID=parsedMessage.project_id;
