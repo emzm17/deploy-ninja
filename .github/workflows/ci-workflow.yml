@@ -4,7 +4,10 @@ on:
   pull_request:
     branches:
       - new-prod-1
-
+  push:
+    branches:
+      - new-prod-1     
+ 
 
 jobs:
   build_and_push:
