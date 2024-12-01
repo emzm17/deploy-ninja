@@ -11,6 +11,7 @@ const proxy = httpProxy.createProxyServer({});
 // Middleware to handle subdomain-based routing
 app.use((req, res) => {
     const hostname = req.hostname;
+    console.log(hostname);
     const subdomain = hostname.split('.')[0]; // Extract subdomain
     console.log(`Request received for subdomain: ${subdomain}`);
 
