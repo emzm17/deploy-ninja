@@ -22,6 +22,7 @@
   },
   "scripts": {
     "start:dev": "cross-env NODE_ENV=development node index.js",
-    "start:prod": "cross-env NODE_ENV=production node index.js"
+    "start:prod": "cross-env NODE_ENV=production node index.js",
+    "build": "prisma generate && next build"
   }
 }

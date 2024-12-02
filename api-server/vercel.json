@@ -12,8 +12,5 @@
         "dest": "/"
       }
       
-    ],
-    "scripts": {
-        "build": "prisma generate && next build"
-     }
+    ]
   }
