@@ -118,10 +118,9 @@ async function startSubscriber(channel,message) {
             // Extract Message
             const new_subdomain = parsedMessage.subDomain;
             const project_ID=parsedMessage.project_id;
-
             // Update the deployment record in Prisma
 
-          
+            
             const updatedRecord = await prisma.deployment.update({
                 where: {id: project_ID },
                 data: {
