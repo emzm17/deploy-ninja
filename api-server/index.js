@@ -4,13 +4,13 @@ const dotenv = require('dotenv');
 const { createClient } = require('redis');
 const isValidGitHubUrl = require('./utils');
 const cors = require('cors');
-const { PrismaClient } = require('@prisma/client');
 const {generateSlug} = require('random-word-slugs');
+const {newRecord,updateRecord,getRecord}=require("./db");
 
 
 
 
-const prisma = new PrismaClient();
+
 if (process.env.NODE_ENV === 'production') {
     dotenv.config({ path: '.env.prod' });
   } else {
@@ -44,20 +44,13 @@ app.get('/status', async (req, res) => {
       if (!id || !subdomain) {
         return res.status(400).json({ error: 'uuid and subdomain are required.' });
       }
-  
-      const record = await prisma.deployment.findFirst({
-        where: {
-          id: id,
-        },
-      });
-  
+      const record=await getRecord(id);
       if (!record) {
         return res.status(404).json({ error: 'Record not found.' });
       }
-  
       res.status(200).json({
-        status: record.status,
-        subdomain: record.subdomain,
+        status: record[0].status,
+        subdomain: record[0].subdomain,
       });
     } catch (error) {
       console.error('Error fetching status:', error.message);
@@ -65,7 +58,6 @@ app.get('/status', async (req, res) => {
     }
   });
   
-
 
 async function sendTaskMessage(githubUrl, subdomain, uuid) {
     if (!githubUrl) {
@@ -91,19 +83,13 @@ app.post('/deploy', async (req, res) => {
     const subDomain=generateSlug();
     await sendTaskMessage(githubUrl,subDomain,myUUID);
     try{
-      const newRecord= await prisma.deployment.create({
-        data: {
-          id: myUUID,
-          subdomain: subDomain,
-          status:'PENDING'
-        }
-       
-  });
-  res.status(200).json({ message: 'Project data received',subdomain:subDomain,id:myUUID});
-}catch(err){
+        const newDeployment=await newRecord(myUUID,subDomain);
+      res.status(200).json({ message: 'Project data received',subdomain:subDomain,id:myUUID});
+    }
+  catch(err){
   console.error( err.message);
   res.status(500).json({ error: 'Internal Server Error' });
-}    
+  }    
 });
 
 
@@ -120,13 +106,7 @@ async function startSubscriber(channel,message) {
             const project_ID=parsedMessage.project_id;
             // Update the deployment record in Prisma
 
-            
-            const updatedRecord = await prisma.deployment.update({
-                where: {id: project_ID },
-                data: {
-                    status: 'ACTIVE',
-                },
-            });
+            const updatedRecord = await updateRecord(project_ID);
         } catch (err) {
             console.error(`Error processing message on "${channel}":`, err.message);
         }
