@@ -18,9 +18,9 @@ const newRecord = async (myUUID, subDomain) => {
     return results;
 };
 
-const updateRecord = async(myUUID) =>{
+const updateRecord = async(myUUID,status) =>{
     const query = 'UPDATE deployment set status=? where id=?';
-    const values= ['ACTIVE',myUUID]
+    const values= [status,myUUID]
     const [results] = await connection.query(query,values);
     return results;
 }

@@ -13,8 +13,8 @@ const redisClient = createClient({
 });
 
 // Function to start a Docker container
-async function startDockerContainer(githubUrl,subdomain,uuid) {
-    const dockerCommand = `docker run --rm -e GIT_REPO_URL=${githubUrl} -e SUBDOMAIN=${subdomain}  -e PROJECT_ID=${uuid}   ${dockerImage}`;
+async function startDockerContainer(githubUrl,subdomain,uuid,command) {
+    const dockerCommand = `docker run --rm -e GIT_REPO_URL=${githubUrl} -e SUBDOMAIN=${subdomain}  -e PROJECT_ID=${uuid} -e COMMAND="${command}"  ${dockerImage}`;
     
     exec(dockerCommand, (error, stdout, stderr) => {
         if (error) {
@@ -30,9 +30,9 @@ async function startDockerContainer(githubUrl,subdomain,uuid) {
 }
 
 // Function to process a single task
-async function processTask(githubUrl,subdomain,uuid) {
+async function processTask(githubUrl,subdomain,uuid,command) {
     console.log(`Processing project with GitHub URL: ${githubUrl} and Subdomain: ${subdomain}`);
-    await startDockerContainer(githubUrl,subdomain,uuid);
+    await startDockerContainer(githubUrl,subdomain,uuid,command);
 }
 
 // Function to process tasks from the Redis queue
@@ -50,7 +50,7 @@ async function processTaskMessages() {
                 const task = JSON.parse(result.element);
                 // Validate task properties
                 // Process the task
-                await processTask(task.githubUrl, task.subdomain, task.uuid);
+                await processTask(task.githubUrl, task.subdomain, task.uuid,task.command);
             } catch (innerError) {
                 console.error('Error processing individual task:', innerError);
             }

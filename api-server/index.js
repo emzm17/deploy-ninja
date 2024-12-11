@@ -59,13 +59,13 @@ app.get('/status', async (req, res) => {
   });
   
 
-async function sendTaskMessage(githubUrl, subdomain, uuid) {
+async function sendTaskMessage(githubUrl, subdomain, uuid,command) {
     if (!githubUrl) {
         console.error('Invalid input: githubUrl are required');
         return;
     }
     try {
-        const message = JSON.stringify({ githubUrl, subdomain, uuid });
+        const message = JSON.stringify({ githubUrl, subdomain, uuid,command });
         const queueName = process.env.REDIS_QUEUE;
         await queueClient.rPush(queueName, message);
     } catch (error) {
@@ -74,14 +74,14 @@ async function sendTaskMessage(githubUrl, subdomain, uuid) {
 }
 
 app.post('/deploy', async (req, res) => {
-    const {githubUrl} = req.body;
+    const {githubUrl,command} = req.body;
     const myUUID = uuidv4(); // Generate UUID per request
 
     if (!githubUrl || !isValidGitHubUrl(githubUrl)) {
         return res.status(400).json({ error: 'A valid GitHub URL is required' });
     }
     const subDomain=generateSlug();
-    await sendTaskMessage(githubUrl,subDomain,myUUID);
+    await sendTaskMessage(githubUrl,subDomain,myUUID,command);
     try{
         const newDeployment=await newRecord(myUUID,subDomain);
       res.status(200).json({ message: 'Project data received',subdomain:subDomain,id:myUUID});
@@ -101,12 +101,18 @@ async function startSubscriber(channel,message) {
         try {
             // Parse JSON message
             const parsedMessage = JSON.parse(rawMessage);
-            // Extract Message
-            const new_subdomain = parsedMessage.subDomain;
-            const project_ID=parsedMessage.project_id;
-            // Update the deployment record in Prisma
-
-            const updatedRecord = await updateRecord(project_ID);
+            const status=parsedMessage.status;
+            if(status==='success'){
+              const project_ID=parsedMessage.project_id;
+              // Update the deployment record in Prisma
+              const updatedRecord = await updateRecord(project_ID,"ACTIVE");
+            }
+            else{
+              const project_ID=parsedMessage.project_id;
+              // Update the deployment record in Prisma
+              const updatedRecord = await updateRecord(project_ID,'FAILED');
+            }
+            
         } catch (err) {
             console.error(`Error processing message on "${channel}":`, err.message);
         }

@@ -10,6 +10,7 @@ const redisClient = createClient({
 const redisChannel=process.env.channel;
 const subdomain=process.env.SUBDOMAIN;
 const PROJECT_ID=process.env.PROJECT_ID;
+const command=process.env.COMMAND
 console.log(subdomain);
 const { S3Client, PutObjectCommand} = require("@aws-sdk/client-s3");
 
@@ -38,7 +39,7 @@ async function init(){
         const outDirPath=path.join(__dirname,'output');
 
         // validation layer 
-        const pro=exec(`cd ${outDirPath} && npm install && npm run build`);
+        const pro=exec(`cd ${outDirPath} && npm install && ${command}`);
         // it will build a dist/ folder we will upload this in R2
 
         pro.stdout.on('data',async (data)=>{
@@ -47,14 +48,31 @@ async function init(){
 
         pro.stdout.on('error', async (data)=>{
             console.log('Error',data.toString());
+         // Publish error message to Redis
+            const message = {
+            subDomain: subdomain,
+            project_id: PROJECT_ID,
+            status: "failed",
+            message: `${data.toString()}`};
+            await publishMessage(redisChannel, message);
       })
 
-      pro.on('close',async()=>{
+      pro.on('close',async(code)=>{
+        if (code !== 0) { 
+          const message = {
+            subDomain: subdomain, 
+            project_id: PROJECT_ID, 
+            status: "failed", 
+            message: `Build process exited with code something wrong` 
+          }; 
+          await publishMessage(redisChannel, message); 
+          return; 
+        }
         console.log('Build complete');
         const distFolderPath=path.join(__dirname,'output','dist');
         const distFolderContents= await fs.readdirSync(distFolderPath,{recursive:true});
         // this will give us all the filepath 
-        const message={subDomain:subdomain,project_id:PROJECT_ID}
+        const message={subDomain:subdomain,project_id:PROJECT_ID,status:"success",message:"build complete"}
         publishMessage(redisChannel,message)
         for (const file of distFolderContents) {
             const filepath = path.join(distFolderPath, file);
