@@ -76,6 +76,7 @@ async function sendTaskMessage(githubUrl, subdomain, uuid,command) {
 app.post('/deploy', async (req, res) => {
     const {githubUrl,command} = req.body;
     const myUUID = uuidv4(); // Generate UUID per request
+    console.log(command);
 
     if (!githubUrl || !isValidGitHubUrl(githubUrl)) {
         return res.status(400).json({ error: 'A valid GitHub URL is required' });
