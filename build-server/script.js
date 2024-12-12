@@ -49,25 +49,25 @@ async function init(){
         pro.stdout.on('error', async (data)=>{
             console.log('Error',data.toString());
          // Publish error message to Redis
-            // const message = {
-            // subDomain: subdomain,
-            // project_id: PROJECT_ID,
-            // status: "failed",
-            // message: `${data.toString()}`};
-            // await publishMessage(redisChannel, message);
+            const message = {
+            subDomain: subdomain,
+            project_id: PROJECT_ID,
+            status: "failed",
+            message: `${data.toString()}`};
+            await publishMessage(redisChannel, message);
       })
 
       pro.on('close',async(code)=>{
-        // if (code !== 0) { 
-        //   const message = {
-        //     subDomain: subdomain, 
-        //     project_id: PROJECT_ID, 
-        //     status: "failed", 
-        //     message: `Build process exited with code something wrong` 
-        //   }; 
-        //   await publishMessage(redisChannel, message); 
-        //   return; 
-        // }
+        if (code !== 0) { 
+          const message = {
+            subDomain: subdomain, 
+            project_id: PROJECT_ID, 
+            status: "failed", 
+            message: `Build process exited with code something wrong` 
+          }; 
+          await publishMessage(redisChannel, message); 
+          return; 
+        }
         console.log('Build complete');
         const distFolderPath=path.join(__dirname,'output','dist');
         const distFolderContents= await fs.readdirSync(distFolderPath,{recursive:true});
