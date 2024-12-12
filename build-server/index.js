@@ -50,6 +50,7 @@ async function processTaskMessages() {
                 const task = JSON.parse(result.element);
                 // Validate task properties
                 // Process the task
+                console.log(task.command);
                 await processTask(task.githubUrl, task.subdomain, task.uuid,task.command);
             } catch (innerError) {
                 console.error('Error processing individual task:', innerError);
