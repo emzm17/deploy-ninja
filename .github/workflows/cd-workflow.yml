@@ -26,3 +26,4 @@ jobs:
           username: root
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           privateKey: ${{ secrets.SERVER_PRIVATE_KEY}}
+
