@@ -29,4 +29,4 @@ jobs:
       shell: bash
       - name: Deploy to server
       run: |
-        ssh user@${{ secrets.HOST }} "whoami"
+        ssh root@${{ secrets.SERVER_HOST }} "whoami"
