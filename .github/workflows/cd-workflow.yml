@@ -4,21 +4,36 @@ on:
   pull_request:
     branches:
       - new-prod-1
+  push:
+    branches:
+      - new-prod-1    
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout the repository code
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: ls -a via ssh
-        uses: fifsky/ssh-action@master
-        with:
-          command: |
-            cd /root/app
-            ls -a
-          host: ${{ secrets.SERVER_HOST }}
-          user: root
-          key: ${{ secrets.SERVER_PRIVATE_KEY }}
+      # Step 2: Set up SSH key
+      - name: Set up SSH keyC
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SERVER_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -p 22 ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+        shell: bash
+
+      # Step 3: Install sshpass and other dependencies
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y sshpass
+        shell: bash
+
+      # Step 4: Deploy to the server
+      - name: Deploy to server
+        run: |
+          sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} "whoami"
+        shell: bash
