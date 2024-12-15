@@ -18,22 +18,15 @@ jobs:
         uses: actions/checkout@v2
 
       # Step 2: Set up SSH key
-      - name: Set up SSH keyC
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SERVER_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -p 22 ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
-        shell: bash
-
-      # Step 3: Install sshpass and other dependencies
-      - name: Install dependencies
-        run: |
-          sudo apt-get update && sudo apt-get install -y sshpass
-        shell: bash
-
-      # Step 4: Deploy to the server
+      - name: Set up SSH key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        eval "$(ssh-agent -s)"
+        ssh-add ~/.ssh/id_rsa <<< "${{ secrets.SSH_PASSPHRASE }}"
+        ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+      shell: bash
       - name: Deploy to server
-        run: |
-          sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} "whoami"
-        shell: bash
+      run: |
+        ssh user@${{ secrets.HOST }} "whoami"
