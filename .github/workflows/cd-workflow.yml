@@ -19,14 +19,17 @@ jobs:
 
       # Step 2: Set up SSH key
       - name: Set up SSH key
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SERVER_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        eval "$(ssh-agent -s)"
-        ssh-add ~/.ssh/id_rsa <<< "${{ secrets.SSH_PASSPHRASE }}"
-        ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
-      shell: bash
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SERVER_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/id_rsa <<< "${{ secrets.SSH_PASSPHRASE }}"
+          ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+        shell: bash
+
+      # Step 3: Deploy to server
       - name: Deploy to server
-      run: |
-        ssh root@${{ secrets.SERVER_HOST }} "whoami"
+        run: |
+          ssh root@${{ secrets.SERVER_HOST }} "whoami"
+        shell: bash
