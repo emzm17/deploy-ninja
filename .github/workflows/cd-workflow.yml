@@ -21,7 +21,8 @@ jobs:
       - name: SSH into Server
         uses: garygrossgarten/github-action-ssh@release
         with:
-          command: whoami
+          command: |
+          ./app/deploy.sh
           host: ${{ secrets.SERVER_HOST }}
           username: root
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
